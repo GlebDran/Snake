@@ -59,7 +59,7 @@ namespace Snake
                 Thread.Sleep(100); // Пауза между шагами
             }
 
-            Console.ReadLine(); // Чтобы окно не закрылось
+            Console.ReadLine(); // Чтобы окно не закрылось сразу
         }
     }
 }

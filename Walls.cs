@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Snake
 {
-    // Класс Walls создаёт границы игрового поля из линий
     public class Walls
     {
         private List<Figure> wallList;
@@ -11,21 +11,12 @@ namespace Snake
         {
             wallList = new List<Figure>();
 
-            // Горизонтальные стены: сверху и снизу
-            HorizontalLine topLine = new HorizontalLine(0, width - 1, 0, '+');
-            HorizontalLine bottomLine = new HorizontalLine(0, width - 1, height - 1, '+');
-
-            // Вертикальные стены: слева и справа
-            VerticalLine leftLine = new VerticalLine(0, height - 1, 0, '+');
-            VerticalLine rightLine = new VerticalLine(0, height - 1, width - 1, '+');
-
-            wallList.Add(topLine);
-            wallList.Add(bottomLine);
-            wallList.Add(leftLine);
-            wallList.Add(rightLine);
+            wallList.Add(new HorizontalLine(0, width - 1, 0, '+'));
+            wallList.Add(new HorizontalLine(0, width - 1, height - 1, '+'));
+            wallList.Add(new VerticalLine(0, height - 1, 0, '+'));
+            wallList.Add(new VerticalLine(0, height - 1, width - 1, '+'));
         }
 
-        // Рисуем все стены
         public void Draw()
         {
             foreach (var wall in wallList)
@@ -34,12 +25,12 @@ namespace Snake
             }
         }
 
-        // Проверка: врезалась ли змейка в стену
-        public bool IsHit(Figure figure)
+        public bool IsHit(Snake snake)
         {
+            Point next = snake.GetNextPoint();
             foreach (var wall in wallList)
             {
-                if (wall.IsHit(figure))
+                if (wall.IsHit(next))
                     return true;
             }
             return false;
