@@ -12,19 +12,20 @@ namespace Snake
             direction = _direction;
             pList = new List<Point>();
 
-            // Создаём начальное тело змейки
+            // Формируем начальное тело змейки
             for (int i = 0; i < length; i++)
             {
-                Point p = new Point(tail.x, tail.y, tail.sym);
-                p.Move(i, direction); // сдвигаем каждую точку в нужном направлении
+                // Используем символ тела: '■'
+                Point p = new Point(tail.x, tail.y, '■');
+                p.Move(i, direction);
                 pList.Add(p);
             }
         }
 
-        // Двигаем змейку на 1 шаг вперёд
+        // Движение змейки
         public void Move()
         {
-            // Удаляем хвостовую точку (затираем её)
+            // Удаляем хвост
             Point tail = pList[0];
             pList.RemoveAt(0);
             tail.Clear();
@@ -32,10 +33,20 @@ namespace Snake
             // Добавляем новую голову
             Point head = GetNextPoint();
             pList.Add(head);
-            head.Draw();
+
+            // Отрисовка тела: зелёным
+            for (int i = 0; i < pList.Count - 1; i++)
+            {
+                pList[i].sym = '■'; // тело
+                pList[i].Draw(ConsoleColor.Green);
+            }
+
+            // Отрисовка головы: жёлтым другим символом
+            head.sym = '☻';
+            head.Draw(ConsoleColor.Yellow);
         }
 
-        // Получить новую точку головы
+        // Вычисляем следующую точку головы
         public Point GetNextPoint()
         {
             Point head = pList[pList.Count - 1];
@@ -44,7 +55,7 @@ namespace Snake
             return nextPoint;
         }
 
-        // Управление — смена направления по нажатию клавиши
+        // Управление стрелками
         public void HandleKey(ConsoleKey key)
         {
             if (key == ConsoleKey.LeftArrow && direction != Direction.RIGHT)
@@ -57,28 +68,24 @@ namespace Snake
                 direction = Direction.DOWN;
         }
 
-        // Проверка на поедание еды
+        // Проверка поедания еды
         public bool Eat(Point food)
         {
             Point head = GetNextPoint();
             if (head.IsHit(food))
             {
-                pList.Add(food); // не удаляем хвост — змея становится длиннее
+                food.sym = '■'; // добавляем как тело
+                pList.Add(food);
                 return true;
             }
             return false;
         }
 
-        // Проверка на самопересечение змейки
+        // Проверка самопересечения
         public bool IsHit(Figure figure)
         {
-            Point head = pList[pList.Count - 1];
-            for (int i = 0; i < pList.Count - 1; i++)
-            {
-                if (head.IsHit(pList[i]))
-                    return true;
-            }
-            return false;
+            Point head = GetNextPoint();
+            return figure.IsHit(head);
         }
     }
 }
