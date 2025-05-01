@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Snake
 {
@@ -10,27 +7,59 @@ namespace Snake
     {
         static void Main(string[] args)
         {
-            int x1 = 1;
-            int y1 = 3;
-            char sym1 = '*';
+            Console.CursorVisible = false;
 
+            // Размеры карты
+            int width = 80;
+            int height = 25;
 
-            Draw (x1, y1, sym1);
+            // 1. Стены
+            Walls walls = new Walls(width, height);
+            walls.Draw();
 
-            int x2 = 4;
-            int y2 = 5;
-            char sym2 = '#';
+            // 2. Змейка
+            Point startPoint = new Point(4, 5, '*');
+            Snake snake = new Snake(startPoint, 5, Direction.RIGHT);
+            snake.Draw();
 
-            Draw(x2, y2, sym2);
+            // 3. Генератор еды
+            FoodCreator foodCreator = new FoodCreator(width, height, '$');
+            Point food = foodCreator.CreateFood();
+            food.Draw();
 
-            Console.ReadLine();
+            // 4. Главный цикл игры
+            while (true)
+            {
+                // 4.1 Проверка на проигрыш
+                if (walls.IsHit(snake) || snake.IsHit(snake))
+                {
+                    Console.SetCursorPosition(35, 12);
+                    Console.WriteLine("GAME OVER");
+                    break;
+                }
 
+                // 4.2 Проверка на поедание еды
+                if (snake.Eat(food))
+                {
+                    food = foodCreator.CreateFood();
+                    food.Draw();
+                }
+                else
+                {
+                    snake.Move();
+                }
+
+                // 4.3 Управление с клавиатуры
+                if (Console.KeyAvailable)
+                {
+                    ConsoleKeyInfo key = Console.ReadKey(true);
+                    snake.HandleKey(key.Key);
+                }
+
+                Thread.Sleep(100); // Пауза между шагами
+            }
+
+            Console.ReadLine(); // Чтобы окно не закрылось
         }
-        static void Draw(int x, int y, char sym)
-        {
-            Console.SetCursorPosition(x, y);
-            Console.Write(sym);
-        }
-           
     }
 }
