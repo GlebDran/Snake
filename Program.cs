@@ -1,37 +1,36 @@
-﻿using System;                     // стандартная библиотека: для работы с консолью, строками, клавишами
-using System.IO;                  // для чтения/записи в файл (сохранение очков)
-using System.Threading;           // для пауз в игре (Thread.Sleep)
-using System.Collections.Generic; // для использования списков (List)
+﻿using System;
+using System.IO;
+using System.Threading;
+using System.Collections.Generic;
+using System.Media;  // ✅ для SoundPlayer
+using System.Text;
 
-namespace Snake // пространство имён проекта
+namespace Snake
 {
     class Program
     {
-        static int speed = 150;        // скорость движения змейки (мс)
-        static int level = 1;          // текущий уровень
-        static int bonusEvery = 5;     // каждые 5 очков появляется новая стена
+        static int speed = 150;              // начальная скорость змейки
+        static int level = 1;                // текущий уровень
+        static int bonusEvery = 5;           // каждые N очков — новый уровень
 
         static void Main(string[] args)
         {
-            Console.OutputEncoding = System.Text.Encoding.UTF8; // добавлено: поддержка кириллицы в консоли
-
+            Console.OutputEncoding = Encoding.UTF8; // ✅ для отображения русских символов и символа змейки ☻
             while (true)
             {
-                RunGame(); // запускаем игру — после Game Over снова сюда
+                RunGame(); // запускаем игру снова после завершения
             }
         }
 
-        // Основной игровой процесс
         static void RunGame()
         {
-            Console.Title = "Гадюка от Глеба";       // название окна
-            Console.CursorVisible = false;           // отключаем мигающий курсор
+            Console.Title = "Гадюка от Глеба";
+            Console.CursorVisible = false;
 
-            int selectedSpeed = ShowMainMenu();      // показываем меню и выбираем сложность
-            if (selectedSpeed == -1) Environment.Exit(0); // выход из игры при Esc
+            int selectedSpeed = ShowMainMenu();
+            if (selectedSpeed == -1) Environment.Exit(0);
             speed = selectedSpeed;
 
-            // Ввод имени игрока
             Console.Clear();
             Console.ForegroundColor = ConsoleColor.Cyan;
             Console.SetCursorPosition(20, 10);
@@ -40,14 +39,13 @@ namespace Snake // пространство имён проекта
             Console.SetCursorPosition(42, 10);
             string playerName = Console.ReadLine();
 
-            // Обработка имени: убираем пробелы, ограничиваем длину
+            // Обработка имени: убираем пробелы и ограничиваем длину
             playerName = playerName.Trim();
             if (string.IsNullOrWhiteSpace(playerName))
                 playerName = "Безымянный";
             if (playerName.Length > 20)
                 playerName = playerName.Substring(0, 20);
 
-            // Звуки при старте
             Console.Clear();
             Console.Beep(1000, 100);
             Console.Beep(1200, 100);
@@ -55,21 +53,17 @@ namespace Snake // пространство имён проекта
             int width = 80;
             int height = 25;
 
-            // Создание стен
             Walls walls = new Walls(width, height);
             walls.Draw();
 
-            // Создание змейки
             Point startPoint = new Point(4, 5, '■');
             Snake snake = new Snake(startPoint, 5, Direction.RIGHT);
             snake.Draw();
 
-            // Создание еды
             FoodCreator foodCreator = new FoodCreator(width, height, '$');
             Point food = foodCreator.CreateFood();
             food.Draw(ConsoleColor.Yellow);
 
-            // Создание менеджера бонусов
             BonusManager bonusManager = new BonusManager(width, height);
 
             int score = 0;
@@ -78,12 +72,10 @@ namespace Snake // пространство имён проекта
 
             bool isPaused = false;
 
-            // Главный игровой цикл
             while (true)
             {
                 if (!isPaused)
                 {
-                    // Проверка проигрыша
                     if (walls.IsHit(snake) || snake.IsHit(snake))
                     {
                         Console.SetCursorPosition(30, 12);
@@ -105,29 +97,17 @@ namespace Snake // пространство имён проекта
                         Console.SetCursorPosition(30, 20);
                         Console.WriteLine("Нажмите любую клавишу для возврата в меню...");
                         Console.ReadKey();
-                        return; // выходим из RunGame() → обратно в Main()
+                        return;
                     }
 
-                    // Съела ли змейка еду
                     if (snake.Eat(food))
                     {
-                        if (food.sym == '$')
-                        {
-                            Console.Beep(1500, 80);
-                            speed = Math.Max(50, speed - 20);
-                        }
-                        else if (food.sym == '*')
-                        {
-                            Console.Beep(500, 200);
-                            speed += 50;
-                        }
-                        else
-                        {
-                            Console.Beep(1400, 80);
-                            score++;
-                        }
+                        PlayEatSound(); // проигрываем звук поедания
 
-                        // Новый уровень каждые 5 очков
+                        if (food.sym == '$') speed = Math.Max(50, speed - 20);
+                        else if (food.sym == '*') speed += 50;
+                        else score++;
+
                         if (score > 0 && score % bonusEvery == 0)
                         {
                             level++;
@@ -136,7 +116,6 @@ namespace Snake // пространство имён проекта
                             Console.Beep(1200, 100);
                         }
 
-                        // Бонус каждые 4 очка
                         if (score % 4 == 0)
                         {
                             char bonusType = (score % 8 == 0) ? '*' : '$';
@@ -149,10 +128,9 @@ namespace Snake // пространство имён проекта
                     }
                     else
                     {
-                        snake.Move(); // обычный ход
+                        snake.Move();
                     }
 
-                    // Проверка съеденного бонуса
                     Point eatenBonus = bonusManager.CheckBonusEaten(snake);
                     if (eatenBonus != null)
                     {
@@ -162,7 +140,6 @@ namespace Snake // пространство имён проекта
                     }
                 }
 
-                // Управление с клавиатуры
                 if (Console.KeyAvailable)
                 {
                     ConsoleKeyInfo key = Console.ReadKey(true);
@@ -180,7 +157,23 @@ namespace Snake // пространство имён проекта
                     }
                 }
 
-                Thread.Sleep(speed); // пауза между шагами
+                Thread.Sleep(speed);
+            }
+        }
+
+        // ✅ Проигрывание звука поедания
+        static void PlayEatSound()
+        {
+            try
+            {
+                using (SoundPlayer player = new SoundPlayer("eat.wav"))
+                {
+                    player.Play(); // асинхронное воспроизведение
+                }
+            }
+            catch
+            {
+                // если файла нет или ошибка воспроизведения — ничего не делаем
             }
         }
 
@@ -217,7 +210,7 @@ namespace Snake // пространство имён проекта
             }
         }
 
-        // Показ текущего счёта и уровня
+        // Вывод текущего счёта
         static void ShowScore(int score, int level = 1)
         {
             Console.SetCursorPosition(2, 0);
@@ -226,14 +219,14 @@ namespace Snake // пространство имён проекта
             Console.ResetColor();
         }
 
-        // Сохранение очков игрока
+        // Сохраняем игрока и счёт в файл
         static void SavePlayerScore(string name, int score)
         {
             string line = $"{name}: {score}";
             File.AppendAllLines("scores.txt", new[] { line });
         }
 
-        // Вывод всех очков из файла
+        // Показываем таблицу рекордов
         static void ShowAllScores()
         {
             string path = "scores.txt";
@@ -243,9 +236,7 @@ namespace Snake // пространство имён проекта
                 foreach (var line in lines)
                 {
                     if (!string.IsNullOrWhiteSpace(line) && line.Contains(":"))
-                    {
                         Console.WriteLine("  " + line);
-                    }
                 }
             }
             else
