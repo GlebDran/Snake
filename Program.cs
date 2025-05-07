@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Collections.Generic;
-using System.Media;  // ✅ для SoundPlayer
+using System.Media;  // для SoundPlayer
 using System.Text;
 
 namespace Snake
@@ -15,7 +15,7 @@ namespace Snake
 
         static void Main(string[] args)
         {
-            Console.OutputEncoding = Encoding.UTF8; // ✅ для отображения русских символов и символа змейки ☻
+            Console.OutputEncoding = Encoding.UTF8; // для отображения русских символов и символа змейки ☻
             while (true)
             {
                 RunGame(); // запускаем игру снова после завершения
@@ -161,7 +161,7 @@ namespace Snake
             }
         }
 
-        // ✅ Проигрывание звука поедания
+        // Проигрывание звука поедания
         static void PlayEatSound()
         {
             try
