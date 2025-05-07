@@ -15,7 +15,7 @@ namespace Snake
         {
             while (true)
             {
-                RunGame(); // цикл запускает игру заново после завершения
+                RunGame(); // запускаем игру в цикле, возвращаемся в меню после Game Over
             }
         }
 
@@ -25,7 +25,7 @@ namespace Snake
             Console.CursorVisible = false;
 
             int selectedSpeed = ShowMainMenu();
-            if (selectedSpeed == -1) Environment.Exit(0); // выход по Esc
+            if (selectedSpeed == -1) Environment.Exit(0); // выход, если нажата Esc
             speed = selectedSpeed;
 
             Console.Clear();
@@ -35,6 +35,13 @@ namespace Snake
             Console.ResetColor();
             Console.SetCursorPosition(42, 10);
             string playerName = Console.ReadLine();
+
+            // обработка имени игрока
+            playerName = playerName.Trim();
+            if (string.IsNullOrWhiteSpace(playerName))
+                playerName = "Безымянный";
+            if (playerName.Length > 20)
+                playerName = playerName.Substring(0, 20);
 
             Console.Clear();
             Console.Beep(1000, 100);
@@ -87,7 +94,7 @@ namespace Snake
                         Console.SetCursorPosition(30, 20);
                         Console.WriteLine("Нажмите любую клавишу для возврата в меню...");
                         Console.ReadKey();
-                        return; // возвращаемся в Main
+                        return; // возвращение в Main → перезапуск игры
                     }
 
                     if (snake.Eat(food))
@@ -215,7 +222,11 @@ namespace Snake
                 string[] lines = File.ReadAllLines(path);
                 foreach (var line in lines)
                 {
-                    Console.WriteLine("  " + line);
+                    // Показываем только валидные строки, содержащие имя и счёт
+                    if (!string.IsNullOrWhiteSpace(line) && line.Contains(":"))
+                    {
+                        Console.WriteLine("  " + line);
+                    }
                 }
             }
             else

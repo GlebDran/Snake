@@ -1,67 +1,77 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System; // подключаем базовую библиотеку .NET (для Console, Random и др.)
+using System.Collections.Generic; // для использования списков List<>
 
-namespace Snake
+namespace Snake // пространство имён игры, чтобы все классы были объединены логически
 {
-    public class BonusManager
+    public class BonusManager // класс, управляющий бонусами в игре
     {
-        private int mapWidth;
-        private int mapHeight;
-        private List<Point> activeBonuses;
-        private Random rand = new Random();
+        private int mapWidth;  // ширина карты (поля)
+        private int mapHeight; // высота карты
+        private List<Point> activeBonuses; // список всех активных бонусов на экране
+        private Random rand = new Random(); // генератор случайных чисел для размещения бонусов
 
+        // Конструктор: задаёт размеры карты и создаёт пустой список бонусов
         public BonusManager(int width, int height)
         {
-            mapWidth = width;
-            mapHeight = height;
-            activeBonuses = new List<Point>();
+            mapWidth = width;              // сохраняем ширину карты
+            mapHeight = height;            // сохраняем высоту карты
+            activeBonuses = new List<Point>(); // создаём пустой список бонусов
         }
 
-        // Создать бонус: символ $ (ускорение) или * (заморозка)
+        // Метод для создания нового бонуса (ускорение '$' или заморозка '*')
         public Point CreateBonus(char type)
         {
+            // Генерируем случайные координаты для бонуса в пределах карты (не у стен)
             int x = rand.Next(2, mapWidth - 2);
             int y = rand.Next(2, mapHeight - 2);
 
+            // Определяем цвет в зависимости от типа бонуса
             ConsoleColor color = type == '$' ? ConsoleColor.Cyan : ConsoleColor.Magenta;
 
+            // Создаём новый объект Point с координатами и символом
             Point bonus = new Point(x, y, type);
+
+            // Отображаем бонус на экране с нужным цветом
             bonus.Draw(color);
 
+            // Добавляем его в список активных бонусов
             activeBonuses.Add(bonus);
+
+            // Возвращаем созданный бонус
             return bonus;
         }
 
-        // Получить список всех бонусов
+        // Получаем текущий список активных бонусов
         public List<Point> GetBonuses()
         {
             return activeBonuses;
         }
 
-        // Удалить использованный бонус
+        // Удаление использованного бонуса с экрана и из списка
         public void RemoveBonus(Point p)
         {
-            p.Clear();
-            activeBonuses.Remove(p);
+            p.Clear(); // убираем символ с экрана
+            activeBonuses.Remove(p); // удаляем из списка
         }
 
-        // Проверка — съела ли змейка бонус
+        // Проверяем: не съела ли змейка один из бонусов
         public Point CheckBonusEaten(Snake snake)
         {
-            foreach (var bonus in activeBonuses)
+            foreach (var bonus in activeBonuses) // перебираем все активные бонусы
             {
+                // Если следующая точка головы змейки совпадает с координатами бонуса
                 if (snake.GetNextPoint().IsHit(bonus))
-                    return bonus;
+                    return bonus; // возвращаем бонус, который съеден
             }
-            return null;
+            return null; // если не съела — возвращаем null
         }
 
-        // Очистить все бонусы (например, при перезапуске)
+        // Полная очистка всех бонусов (например, при перезапуске игры)
         public void ClearAll()
         {
-            foreach (var b in activeBonuses)
+            foreach (var b in activeBonuses) // очищаем каждый бонус с экрана
                 b.Clear();
-            activeBonuses.Clear();
+            activeBonuses.Clear(); // очищаем список
         }
     }
 }
