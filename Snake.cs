@@ -1,61 +1,62 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System;                    // стандартная библиотека (для ConsoleKey и т.п.)
+using System.Collections.Generic; // подключаем список List<>
 
-namespace Snake
+namespace Snake // пространство имён, объединяющее все классы игры
 {
+    // Класс змейки — наследует Figure, чтобы использовать pList, Draw(), IsHit()
     public class Snake : Figure
     {
-        private Direction direction;
+        private Direction direction; // текущее направление движения змейки
 
+        // Конструктор: задаёт начальную позицию хвоста, длину и направление
         public Snake(Point tail, int length, Direction _direction)
         {
-            direction = _direction;
-            pList = new List<Point>();
+            direction = _direction;         // сохраняем направление
+            pList = new List<Point>();      // создаём список точек тела змейки
 
-            // Формируем начальное тело змейки
+            // Создаём начальное тело змейки (последовательно двигаем точки от хвоста)
             for (int i = 0; i < length; i++)
             {
-                // Используем символ тела: '■'
-                Point p = new Point(tail.x, tail.y, '■');
-                p.Move(i, direction);
-                pList.Add(p);
+                Point p = new Point(tail.x, tail.y, '■'); // каждая точка — квадрат '■'
+                p.Move(i, direction); // смещаем каждую точку вперёд на i позиций
+                pList.Add(p);         // добавляем точку в тело змейки
             }
         }
 
-        // Движение змейки
+        // Метод для движения змейки вперёд
         public void Move()
         {
-            // Удаляем хвост
+            // Удаляем хвост: стираем самую первую точку (чтобы длина оставалась постоянной)
             Point tail = pList[0];
             pList.RemoveAt(0);
             tail.Clear();
 
-            // Добавляем новую голову
+            // Вычисляем следующую точку головы и добавляем в конец списка
             Point head = GetNextPoint();
             pList.Add(head);
 
-            // Отрисовка тела: зелёным
+            // Отрисовываем тело змейки зелёным
             for (int i = 0; i < pList.Count - 1; i++)
             {
-                pList[i].sym = '■'; // тело
+                pList[i].sym = '■'; // тело — зелёные квадраты
                 pList[i].Draw(ConsoleColor.Green);
             }
 
-            // Отрисовка головы: жёлтым другим символом
-            head.sym = '☻';
+            // Отрисовываем голову другим символом и цветом — для визуального выделения
+            head.sym = '☻'; // голова змейки — смайлик
             head.Draw(ConsoleColor.Yellow);
         }
 
-        // Вычисляем следующую точку головы
+        // Метод для определения следующей точки, куда должна двигаться голова
         public Point GetNextPoint()
         {
-            Point head = pList[pList.Count - 1];
-            Point nextPoint = new Point(head.x, head.y, head.sym);
-            nextPoint.Move(1, direction);
+            Point head = pList[pList.Count - 1]; // берём текущую голову
+            Point nextPoint = new Point(head.x, head.y, head.sym); // копируем координаты
+            nextPoint.Move(1, direction); // сдвигаем её на 1 шаг вперёд
             return nextPoint;
         }
 
-        // Управление стрелками
+        // Метод обработки нажатий клавиш (стрелки): меняем направление
         public void HandleKey(ConsoleKey key)
         {
             if (key == ConsoleKey.LeftArrow && direction != Direction.RIGHT)
@@ -68,24 +69,24 @@ namespace Snake
                 direction = Direction.DOWN;
         }
 
-        // Проверка поедания еды
+        // Метод проверки: съела ли змейка еду
         public bool Eat(Point food)
         {
-            Point head = GetNextPoint();
-            if (head.IsHit(food))
+            Point head = GetNextPoint(); // получаем следующую точку головы
+            if (head.IsHit(food))        // если она совпадает с точкой еды
             {
-                food.sym = '■'; // добавляем как тело
-                pList.Add(food);
-                return true;
+                food.sym = '■';          // превращаем еду в часть тела
+                pList.Add(food);         // добавляем как новую "голову"
+                return true;             // возвращаем true → еда съедена
             }
-            return false;
+            return false; // иначе — не съела
         }
 
-        // Проверка самопересечения
+        // Метод проверки столкновения с чем-то (например, стенами или собой)
         public bool IsHit(Figure figure)
         {
-            Point head = GetNextPoint();
-            return figure.IsHit(head);
+            Point head = GetNextPoint();   // получаем следующую позицию головы
+            return figure.IsHit(head);     // проверяем — сталкивается ли она с переданной фигурой
         }
     }
 }
